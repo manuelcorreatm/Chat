@@ -1,0 +1,59 @@
+<div ng-controller="chatCtrl as chatCtrl" layout="column" layout-fill>
+    <!-- HEADER -->
+    <md-toolbar layout="row" class="md-medium-tall" layout-align="center center">
+        <md-button class="menu" hide-gt-sm ng-click="chatCtrl.toggleContactsList()" aria-label="Show Contacts List">
+            <md-icon md-svg-icon="menu"></md-icon>
+        </md-button>
+        <h1 flex layout="row" layout-align="center center">Chat App</h1>
+        <div>
+            <md-button id="userButton" ng-click="chatCtrl.logout()" class="md-fab btn-avatar" aria-label="Show User Settings">
+                <img ng-src="{{chatCtrl.user.avatar}}" class="avatar" alt="{{chatCtrl.user.name}}" />
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <!-- BODY -->
+    <div flex layout="row">
+        <!-- SIDEBAR LEFT-->
+        <md-sidenav layout="column" md-is-locked-open="$mdMedia('gt-sm')" md-component-id="left" class="md-whiteframe-z2">
+            <!-- AUTOCOMPLETE USER SEARCH -->
+            <md-autocomplete md-selected-item="chatCtrl.selectedUser" md-search-text="searchText" md-items="user in chatCtrl.getMatches(searchText)"
+                md-item-text="user.name" placeholder="Search user">
+                <span md-highlight-text="searchText">{{user.name}}</span>
+            </md-autocomplete>
+            <!-- SIDEBAR TABS -->
+            <md-tabs flex md-stretch-tabs="always">
+                <!-- CONTACT LIST -->
+                <md-tab label="Contacts">
+                    <md-content>
+                        <md-list ng-click="chatCtrl.toggleSidebar()">
+                            <md-list-item ng-repeat="contact in chatCtrl.user.contacts">
+                                <md-button ng-click="chatCtrl.selectContact(contact)" ng-class="{ 'selected' : contact===chatCtrl.selectedContact }">
+                                    <img ng-src="{{contact.avatar}}" class="avatar list-avatar" alt="{{contact.name}}" />                                    {{contact.name}}
+                                </md-button>
+                            </md-list-item>
+                        </md-list>
+                    </md-content>
+                </md-tab>
+                <!-- CONVERSATIONS LIST -->
+                <md-tab label="Conversations">
+                    <md-content>
+                        <md-list ng-click="chatCtrl.toggleSidebar()">
+                            <md-list-item ng-repeat="conversation in chatCtrl.conversations">
+                                <md-button ng-click="chatCtrl.selectConversation(conversation)" ng-class="{ 'selected' : conversation===chatCtrl.selectedConversation }">
+                                    <img ng-src="{{conversation.avatar}}" class="avatar list-avatar" alt="{{conversation.name}}" />                                    {{contact.name}}
+                                </md-button>
+                            </md-list-item>
+                        </md-list>
+                    </md-content>
+                </md-tab>
+            </md-tabs>
+        </md-sidenav>
+
+        <!-- MAIN CONTENT RIGHT-->
+        <md-content flex id="content">
+            <img ng-src="{{selectedConversation.avatar}}" class="avatar" alt="{{selectedConversation.name}}" />
+            <h2>{{selectedConversation.name}}</h2>
+        </md-content>
+    </div>
+</div>
