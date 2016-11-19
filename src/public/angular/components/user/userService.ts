@@ -2,7 +2,6 @@ class UserService implements chat.UserService {
     static $inject = ["$http", "$q", "loginFbService"];
     private user: chat.User;
     constructor(private $http: angular.IHttpService, private $q: angular.IQService, private loginFbService: any) {
-
     }
 
     getUser(): chat.User {
