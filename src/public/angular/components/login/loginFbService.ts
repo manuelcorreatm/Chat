@@ -1,8 +1,4 @@
-export interface loginFbService {
-    login(): angular.IPromise<chat.User>;
-}
-
-class LoginFbService implements loginFbService {
+class LoginFbService implements chat.LoginFbService {
     static $inject = ["$rootScope", "$http", "$q"];
     constructor(private $rootScope: angular.IRootScopeService, private $http: angular.IHttpService, private $q: angular.IQService) {
 
@@ -11,14 +7,12 @@ class LoginFbService implements loginFbService {
     login() {
         var deferred = this.$q.defer();
         FB.login((res: any) => {
-            console.log(res);
             if (res.status === 'connected') {
                 FB.api('/me', { fields: "name, email, picture" }, (res: any) => {
                     if (!res || res.error) {
-                        console.log(res);
                         deferred.reject("error getting fb data");
                     } else {
-                        console.log("connected", res);
+                        console.log("connected to FB");
                         let profile = {
                             id: res.id,
                             email: res.email,

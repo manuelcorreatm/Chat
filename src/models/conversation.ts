@@ -1,4 +1,4 @@
-import mongoose = require('mongoose');
+import * as mongoose from 'mongoose';
 
 var Schema = mongoose.Schema;
 
@@ -7,19 +7,21 @@ var ConversationSchema = new Schema({
     name: String,
     avatar: { type: String, default: "/assets/img/ghosty.png" },
     users: [{
-        id: String,
+        _id: String,
         email: String,
         name: String,
         avatar: String
     }],
     messages: [{
         sender: {
+            _id: String,
             email: String,
             name: String,
             avatar: String
         },
         message: String
-    }]
+    }],
+    type: String
 });
 
 interface ConversationModel extends chat.Conversation, mongoose.Document { }

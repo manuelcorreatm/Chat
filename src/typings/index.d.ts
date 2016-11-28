@@ -5,7 +5,6 @@
 /// <reference path="globals/connect-mongo/index.d.ts" />
 /// <reference path="globals/cookie-parser/index.d.ts" />
 /// <reference path="globals/errorhandler/index.d.ts" />
-/// <reference path="globals/es6-promise/index.d.ts" />
 /// <reference path="globals/express-serve-static-core/index.d.ts" />
 /// <reference path="globals/express-session/index.d.ts" />
 /// <reference path="globals/express/index.d.ts" />

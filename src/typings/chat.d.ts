@@ -4,6 +4,7 @@ declare module 'chat' {
 
 declare namespace chat {
     export interface Contact {
+        _id: string,
         email: string,
         name: string,
         avatar: string
@@ -21,8 +22,6 @@ declare namespace chat {
         contacts: [Contact]
     }
 
-
-
     export interface LoginData {
         email: string,
         password: string
@@ -35,19 +34,17 @@ declare namespace chat {
     }
 
     export interface Conversation {
-        name: string,
-        avatar: string,
-        users: [{
-            email: string,
-            name: string,
-            avatar: string
-        }],
-        messages: [{
-            email: string,
-            name: string,
-            avatar: string,
-            message: string
-        }]
+        _id: any,
+        name?: string,
+        avatar?: string,
+        users: Contact[],
+        messages: { sender: Contact, message: string }[],
+        type: string,
+        uid?: string
+    }
+
+    export interface LoginFbService {
+        login(): angular.IPromise<chat.User>;
     }
 
     export interface UserService {

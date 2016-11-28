@@ -1,5 +1,5 @@
-import mongoose = require('mongoose');
-import passportLocalMongoose = require('passport-local-mongoose');
+import * as mongoose from 'mongoose';
+import * as passportLocalMongoose from 'passport-local-mongoose';
 
 var Schema = mongoose.Schema;
 
@@ -14,6 +14,7 @@ var UserSchema = new Schema({
     },
     contacts: [
         {
+            id: String,
             email: String,
             name: String,
             avatar: String

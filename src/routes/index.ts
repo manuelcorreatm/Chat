@@ -1,9 +1,9 @@
-import express = require('express');
-import passport = require('passport');
-import mongoose = require('mongoose');
+import * as express from 'express';
+import * as passport from 'passport';
+import * as mongoose from 'mongoose';
+import * as User from '../models/user';
 
 var router = express.Router();
-import User = require('../models/user');
 
 /* GET home page. */
 router.get('/chat', function (req, res) {
@@ -29,8 +29,7 @@ router.get('/logout', function (req, res) {
 });
 
 router.post('/signup', function (req, res, next) {
-    console.log(req.body);
-    User.register(new User({ email: req.body.email }), req.body.password, function (err) {
+    User.register(new User({ email: req.body.email, name: req.body.name }), req.body.password, function (err) {
         if (err) {
             //Error Handling for repeated user or other sign up related errors
             console.log('error while user register!', err);

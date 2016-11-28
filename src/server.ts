@@ -1,17 +1,17 @@
-import http = require('http');
-import express = require('express');
-import path = require('path');
-import favicon = require('serve-favicon');
-import logger = require('morgan');
-import cookieParser = require('cookie-parser');
-import bodyParser = require('body-parser');
-import passport = require('passport');
-import session = require('express-session');
-import errorHandler = require('errorhandler');
-import methodOverride = require('method-override');
-import mongoose = require('mongoose');
-import connectMongo = require('connect-mongo');
-import socketio = require('socket.io');
+import * as http from 'http';
+import * as express from 'express';
+import * as path from 'path';
+import * as favicon from 'serve-favicon';
+import * as logger from 'morgan';
+import * as cookieParser from 'cookie-parser';
+import * as bodyParser from 'body-parser';
+import * as passport from 'passport';
+import * as session from 'express-session';
+import * as errorHandler from 'errorhandler';
+import * as methodOverride from 'method-override';
+import * as mongoose from 'mongoose';
+import * as connectMongo from 'connect-mongo';
+import * as socketio from 'socket.io';
 
 // *** EXPRESS *** //
 const app = express();
