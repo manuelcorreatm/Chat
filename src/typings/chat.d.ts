@@ -7,7 +7,12 @@ declare namespace chat {
         _id: string,
         email: string,
         name: string,
-        avatar: string
+        avatar: string,
+        conversation?: string
+    }
+
+    export interface Contacts {
+        [index: string]: Contact
     }
 
     export interface User {
@@ -38,9 +43,22 @@ declare namespace chat {
         name?: string,
         avatar?: string,
         users: Contact[],
-        messages: { sender: Contact, message: string }[],
-        type: string,
-        uid?: string
+        messages: Message[],
+        type: string
+    }
+
+    export interface Conversations {
+        [index: string]: Conversation
+    }
+
+    export interface UsersXConversations {
+        [index: string]: string
+    }
+
+    export interface Message {
+        conversation?: string,
+        message: string,
+        sender: Contact
     }
 
     export interface LoginFbService {
@@ -54,5 +72,11 @@ declare namespace chat {
         getUser(): User;
         authenticate(): angular.IPromise<string>;
         logout(): angular.IPromise<User>;
+    }
+
+    export interface Socket {
+        connect(): void;
+        on(eventName: string, callback: Function): void;
+        emit(eventName: string, data: any, callback?: Function): void;
     }
 }

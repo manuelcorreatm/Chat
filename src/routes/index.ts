@@ -1,6 +1,5 @@
 import * as express from 'express';
 import * as passport from 'passport';
-import * as mongoose from 'mongoose';
 import * as User from '../models/user';
 
 var router = express.Router();

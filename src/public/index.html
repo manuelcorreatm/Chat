@@ -15,6 +15,7 @@
     <div ng-view layout-fill></div>
 
     <!--Vendor JS-->
+    <script src="socket.io/socket.io.js"></script>
     <script src="assets/libs/jquery-3.1.0.min.js"></script>
     <!--<script src="assets/libs/bootstrap.js"></script>-->
     <script src="assets/libs/angular.js"></script>
@@ -28,12 +29,13 @@
     <script src="angular/app.routes.js"></script>
     <!--Modules-->
     <!--Controllers-->
-    <script src="angular/components/login/loginCtrl.js"></script>
-    <script src="angular/components/chat/chatCtrl.js"></script>
+    <script src="angular/components/login/login.controller.js"></script>
+    <script src="angular/components/chat/chat.controller.js"></script>
     <!--Directives-->
     <!--Services-->
-    <script src="angular/components/login/loginFbService.js"></script>
-    <script src="angular/components/user/userService.js"></script>
+    <script src="angular/components/login/loginFb.service.js"></script>
+    <script src="angular/components/user/user.service.js"></script>
+    <script src="angular/components/socketio/socketio.service.js"></script>
 </body>
 
 </html>

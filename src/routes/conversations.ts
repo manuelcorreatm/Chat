@@ -4,8 +4,8 @@ import * as mongoose from 'mongoose';
 var router = express.Router();
 
 router.post('/', function (req, res) {
+    //CREATE CONVERSATION
     var conversation = new Conversation();
-    conversation.name = req.body.name;
     conversation.avatar = req.body.avatar;
     conversation.users = req.body.users;
     conversation.messages = req.body.messages;
@@ -20,19 +20,40 @@ router.post('/', function (req, res) {
     })
 });
 
-router.get('/:userid', function (req, res, next) {
-    if (!req.params.userid) {
-        return next(new Error('No user id.'));
-    }
-    //retrieve all conversations from Monogo
-    Conversation.find({ "users._id": req.params.userid }, function (err, conversations) {
-        if (err) {
-            return console.error(err);
-        } else {
-            //JSON response will show all conversations in JSON format
-            res.json(conversations);
-        }
-    });
+router.post('/:conversationid/messages', function (req, res, next) {
+    //ADD MESSAGE TO CONVERSATION
+    Conversation.findByIdAndUpdate(req.params.conversationid,
+        {
+            $push: {
+                "messages": {
+                    sender: req.body.sender,
+                    message: req.body.message
+                }
+            }
+        }, function (err, conversation) {
+            if (err) {
+                return console.error(err);
+            }
+            res.json(conversation);
+        });
+});
+
+router.post('/:conversationid/users', function (req, res, next) {
+    //ADD USERS TO CONVERSATION
+    var users: chat.Contact[] = req.body.users;
+    Conversation.findByIdAndUpdate(req.params.conversationid,
+        {
+            $push: {
+                "users": {
+                    $each: users
+                }
+            }
+        }, { new: true }, function (err, conversation) {
+            if (err) {
+                return console.error(err);
+            }
+            res.json(conversation);
+        });
 });
 
 export = router;

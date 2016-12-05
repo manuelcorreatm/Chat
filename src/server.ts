@@ -17,7 +17,6 @@ import * as socketio from 'socket.io';
 const app = express();
 app.set('port', process.env.PORT || 3000);
 
-// uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public/assets/img', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -65,8 +64,41 @@ if ('development' == app.get('env')) {
 var server = http.createServer(app);
 var io = socketio(server);
 io.on("connection", function (socket) {
-    socket.on("chatMessage", function (msg: string) {
-        io.emit("chatMessage", msg);
+    console.log("server connected to io");
+    socket.on("join", function (room: string) {
+        console.log("joining room: " + room);
+        socket.join(room);
+    });
+
+    socket.on('leave', function (room: string) {
+        console.log("leaving room: " + room);
+        socket.leave(room);
+    });
+
+    socket.on('send:message', function (message: chat.Message) {
+        console.log("sending message: " + message.message);
+        socket.broadcast.to(message.conversation).emit("new:message", message);
+    });
+
+    socket.on("create:conversation", function (conversation: chat.Conversation) {
+        console.log("creating conversation: " + conversation._id);
+        for (let user of conversation.users) {
+            socket.broadcast.to(user._id).emit("add:conversation", conversation);
+        }
+    });
+
+    socket.on("update:contacts", function (contacts: chat.Contact[]) {
+        console.log("updating contact list of users affected");
+        for (let contact of contacts) {
+            socket.broadcast.to(contact._id).emit("refresh:contacts");
+        }
+    });
+
+    socket.on("join:group", function (conversation: chat.Conversation) {
+        console.log("Adding users to group");
+        for (let user of conversation.users) {
+            socket.broadcast.to(user._id).emit("add:conversation", conversation);
+        }
     });
 });
 

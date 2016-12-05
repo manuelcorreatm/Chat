@@ -1,6 +1,6 @@
 <div ng-controller="chatCtrl as chatCtrl" layout="row" layout-fill>
     <!-- SIDEBAR LEFT-->
-    <md-sidenav layout="column" md-is-locked-open="$mdMedia('gt-sm')" md-component-id="left">
+    <md-sidenav layout="column" md-is-locked-open="$mdMedia('gt-sm')" md-component-id="left" md-whiteframe="1">
         <!-- USER TOOLBAR -->
         <md-toolbar layout="row" layout-align="left center">
             <md-button id="userButton" ng-click="chatCtrl.logout()" class="md-fab btn-avatar" aria-label="Show User Settings">
@@ -63,23 +63,33 @@
                 <img layout-fill ng-src="{{chatCtrl.selectedConversation.avatar}}" class="" alt="{{chatCtrl.selectedConversation.name}}"
                 />
             </md-button>
-            <h3 class="title-name">{{chatCtrl.selectedConversation.name}}</h3>
+            <h3 flex class="title-name">{{chatCtrl.selectedConversation.name}}</h3>
+            <md-button ng-hide="chatCtrl.selectedConversation.type === 'single'" ng-click="chatCtrl.addUserToConversation()" class="md-icon-button"
+                aria-label="Add User To Conversation">
+                <md-icon md-svg-icon="addgroup"></md-icon>
+            </md-button>
         </md-toolbar>
         <!-- CHAT WINDOW -->
         <md-content flex id="content">
-
+            <md-list>
+                <md-list-item ng-repeat="message in chatCtrl.selectedConversation.messages">
+                    <img ng-src="{{message.sender.avatar}}" class="avatar list-avatar" alt="{{message.sender.name}}" />
+                    <span>{{message.message}}</span>
+                </md-list-item>
+            </md-list>
         </md-content>
         <md-divider></md-divider>
         <!-- CHAT TEXTBOX -->
-        <div layout="row">
+        <form layout="row">
             <md-input-container class="txtMessage" flex>
-                <textarea layout-fill id="txtMesage" ng-model="chatCtrl.message" max-rows="5" aria-label="Message Textbox" md-select-on-focus
-                    md-no-resize></textarea>
+                <!--<textarea layout-fill id="txtMesage" ng-model="chatCtrl.message" max-rows="5" aria-label="Message Textbox" md-select-on-focus
+                    md-no-resize></textarea>-->
+                <input type="text" id="txtMesage" ng-model="chatCtrl.message" aria-label="Message Textbox" />
             </md-input-container>
-            <md-button ng-click="chatCtrl.sendMessage()" class="md-icon-button" aria-label="Send Message">
+            <md-button type="submit" ng-click="chatCtrl.sendMessage()" class="md-icon-button" aria-label="Send Message">
                 <md-icon md-svg-icon="send"></md-icon>
             </md-button>
-        </div>
+        </form>
     </div>
 
 </div>
