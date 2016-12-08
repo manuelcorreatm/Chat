@@ -19,6 +19,7 @@ var ConversationSchema = new Schema({
             name: String,
             avatar: String
         },
+        messageType: String,
         message: String
     }],
     type: String

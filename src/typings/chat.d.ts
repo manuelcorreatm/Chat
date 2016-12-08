@@ -7,8 +7,7 @@ declare namespace chat {
         _id: string,
         email: string,
         name: string,
-        avatar: string,
-        conversation?: string
+        avatar: string
     }
 
     export interface Contacts {
@@ -58,6 +57,7 @@ declare namespace chat {
     export interface Message {
         conversation?: string,
         message: string,
+        messageType: string,
         sender: Contact
     }
 

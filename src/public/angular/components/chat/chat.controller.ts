@@ -5,11 +5,21 @@ class ChatCtrl {
     public selectedConversation: chat.Conversation;
     public selectedUsers: chat.Contact[];
     public message: string;
+    public selectedInput: string;
 
     private users: [chat.User]; //replace this with async call to search for users
     private contacts: chat.Contacts; //Object with all the user's contacts <id, contact>
     private usersXconversations: chat.UsersXConversations; //Object with relationship between contact and conversation <contactid, conversationid>
     private usersInGroup: chat.Contacts; //Object with all the users in the selected group <id, user>
+    private canvas: HTMLCanvasElement = <HTMLCanvasElement>document.getElementById("canvas");
+    private canvasContainer = angular.element(this.canvas).parent();
+    private paint: boolean;
+    private clickX: number[] = [];
+    private clickY: number[] = [];
+    private clickDrag: boolean[] = [];
+    private offsetLeft = this.canvas.getBoundingClientRect().left - window.scrollX;
+    private offsetTop = this.canvas.getBoundingClientRect().top - window.scrollY;
+    private context = this.canvas.getContext("2d");
 
     static $inject = ["$scope", "$mdSidenav", "$location", "userService", "$http", "socketIO", "$timeout"];
     constructor(
@@ -57,6 +67,23 @@ class ChatCtrl {
             this.socketIO.on("refresh:contacts", () => {
                 this.refreshContacts();
             });
+        });
+
+        //Key event
+        angular.element("#txtMessage").keyup((event) => {
+            if (event.keyCode === 13 && !event.shiftKey) {
+                this.sendMessage();
+            }
+        })
+
+        //CANVAS
+        //Run function when browser resizes
+        angular.element(window).resize(() => {
+            angular.element(this.canvas).attr('width', this.canvasContainer.width()); //max width
+            angular.element(this.canvas).attr('height', this.canvasContainer.height()); //max height
+
+            //Call a function to redraw other content (texts, images etc)
+            this.redraw();
         });
     }
 
@@ -132,7 +159,8 @@ class ChatCtrl {
     createConversation() {
         if (this.selectedUsers.length === 1) {
             if (this.usersXconversations[this.selectedUsers[0]._id]) {
-                this.selectedConversation = this.conversations[this.usersXconversations[this.selectedUsers[0]._id]];
+                this.selectConversation(this.conversations[this.usersXconversations[this.selectedUsers[0]._id]]);
+                // this.selectedConversation = this.conversations[this.usersXconversations[this.selectedUsers[0]._id]];
             } else {
                 let contact = {
                     _id: this.selectedUsers[0]._id,
@@ -216,8 +244,8 @@ class ChatCtrl {
     }
     selectContact(contact: chat.Contact) {
         this.selectedContact = contact;
-        if (this.conversations[contact.conversation]) {
-            this.selectedConversation = this.conversations[contact.conversation];
+        if (this.usersXconversations[contact._id]) {
+            this.selectConversation(this.conversations[this.usersXconversations[contact._id]]);
         } else {
             //create it
             this.selectedUsers = [contact];
@@ -251,6 +279,9 @@ class ChatCtrl {
     }
 
     selectConversation(conversation: chat.Conversation) {
+        if (this.selectedConversation === conversation) {
+            return;
+        }
         this.usersInGroup = {};
         this.selectedConversation = conversation;
         if (conversation.type === "group") {
@@ -258,10 +289,12 @@ class ChatCtrl {
                 this.usersInGroup[user._id] = user;
             }
         }
+        this.selectInput("textarea");
+        this.resetInputs();
         this.updateChatWindow();
     }
 
-    /* CHAT TOOLBAR */
+    /* CHAT UPPER TOOLBAR */
     addUserToConversation() {
         var updateMongo = false;
         var users: chat.Contact[] = [];
@@ -286,8 +319,32 @@ class ChatCtrl {
         this.selectedUsers = [];
     }
 
+    /* CHAT LOWER TOOLBAR */
+    selectInput(input: string) {
+        this.selectedInput = input;
+        if (input === "canvas") {
+            this.$timeout(() => {
+                angular.element(this.canvas).attr('width', this.canvasContainer.width()); //max width
+                angular.element(this.canvas).attr('height', this.canvasContainer.height()); //max height
+
+                //Call a function to redraw other content (texts, images etc)
+                this.redraw();
+            }, 100);
+        } else {
+            this.$timeout(() => {
+                angular.element("#txtMessage").focus();
+            }, 100);
+        }
+    }
+
     /* CHAT WINDOW */
     sendMessage() {
+        var messageType: string = "text";
+        if (this.selectedInput === "canvas") {
+            this.message = this.canvas.toDataURL("image/png");
+            messageType = "image"
+        }
+
         var message = {
             sender: {
                 _id: this.user._id,
@@ -295,20 +352,20 @@ class ChatCtrl {
                 avatar: this.user.avatar,
                 email: this.user.email
             },
+            messageType: messageType,
             message: this.message
         };
 
         this.socketIO.emit("send:message", {
             conversation: this.selectedConversation._id,
             sender: message.sender,
-            message: message.message
+            message: message.message,
+            messageType: message.messageType
         });
 
         this.selectedConversation.messages.push(message);
-        this.message = "";
-
+        this.resetInputs();
         this.updateChatWindow();
-
         this.$http.post("/conversations/" + this.selectedConversation._id + "/messages", message);
     }
 
@@ -318,6 +375,69 @@ class ChatCtrl {
             chatWindow.scrollTop(chatWindow[0].scrollHeight);
         }, 100);
     }
+
+    private resetInputs() {
+        this.message = "";
+        this.clickX = [];
+        this.clickY = [];
+        this.clickDrag = [];
+        this.redraw();
+    }
+
+    /* CANVAS */
+    canvasMouseDown(event: JQueryEventObject) {
+        // var mouseX = event.pageX - this.offsetLeft;
+        // var mouseY = event.pageY - this.offsetTop;
+        var mouseX = event.offsetX;
+        var mouseY = event.offsetY;
+        this.paint = true;
+        this.addClick(mouseX, mouseY);
+        this.redraw();
+    }
+
+    canvasMouseMove(event: JQueryEventObject) {
+        if (this.paint) {
+            this.addClick(event.offsetX, event.offsetY, true);
+            this.redraw();
+        }
+    }
+
+    canvasMouseUp(event: JQueryEventObject) {
+        this.paint = false;
+        this.redraw();
+    }
+
+    canvasMouseLeave(event: JQueryEventObject) {
+        this.paint = false;
+    }
+
+    addClick(x: number, y: number, dragging?: boolean) {
+        this.clickX.push(x);
+        this.clickY.push(y);
+        this.clickDrag.push(dragging);
+    }
+
+    redraw() {
+        this.context.strokeStyle = "black";
+        this.context.lineJoin = "round";
+        this.context.lineWidth = 5;
+        this.context.clearRect(0, 0, this.context.canvas.width, this.context.canvas.height); // Clears the canvas
+        for (var i = 0; i < this.clickX.length; i++) {
+            this.context.beginPath();
+            if (this.clickDrag[i] && i) {
+                this.context.moveTo(this.clickX[i - 1], this.clickY[i - 1]);
+            } else {
+                this.context.moveTo(this.clickX[i] - 1, this.clickY[i]);
+            }
+            this.context.lineTo(this.clickX[i], this.clickY[i]);
+            this.context.closePath();
+            this.context.stroke();
+        }
+    }
+
+
+
+
 }
 
 angular.module("chatApp")

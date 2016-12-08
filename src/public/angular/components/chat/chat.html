@@ -26,7 +26,7 @@
             <!-- CONTACTS -->
             <md-tab label="Contacts">
                 <md-tab-content layout="column" layout-fill>
-                    <md-list flex ng-click="chatCtrl.toggleSidebar()">
+                    <md-list flex>
                         <md-list-item ng-repeat="contact in chatCtrl.user.contacts">
                             <md-button ng-click="chatCtrl.selectContact(contact)" ng-class="{ 'selected' : contact===chatCtrl.selectedContact }">
                                 <img ng-src="{{contact.avatar}}" class="avatar list-avatar" alt="{{contact.name}}" /> {{contact.name}}
@@ -39,7 +39,7 @@
             <!-- CONVERSATIONS -->
             <md-tab label="Conversations">
                 <md-tab-content layout="column" layout-fill>
-                    <md-list flex ng-click="chatCtrl.toggleSidebar()">
+                    <md-list flex>
                         <md-list-item ng-repeat="conversation in chatCtrl.conversations">
                             <md-button ng-click="chatCtrl.selectConversation(conversation)" ng-class="{ 'selected' : conversation===chatCtrl.selectedConversation }">
                                 <img ng-src="{{conversation.avatar}}" class="avatar list-avatar" alt="{{conversation.name}}" />                                {{conversation.name}}
@@ -70,26 +70,44 @@
             </md-button>
         </md-toolbar>
         <!-- CHAT WINDOW -->
-        <md-content flex id="content">
+        <md-content flex="70" id="content">
             <md-list>
                 <md-list-item ng-repeat="message in chatCtrl.selectedConversation.messages">
                     <img ng-src="{{message.sender.avatar}}" class="avatar list-avatar" alt="{{message.sender.name}}" />
-                    <span>{{message.message}}</span>
+                    <img flex="80" ng-src="{{message.message}}" ng-if="message.messageType === 'image'" />
+                    <span ng-if="message.messageType === 'text'">{{message.message}}</span>
                 </md-list-item>
             </md-list>
         </md-content>
         <md-divider></md-divider>
-        <!-- CHAT TEXTBOX -->
-        <form layout="row">
-            <md-input-container class="txtMessage" flex>
-                <!--<textarea layout-fill id="txtMesage" ng-model="chatCtrl.message" max-rows="5" aria-label="Message Textbox" md-select-on-focus
-                    md-no-resize></textarea>-->
-                <input type="text" id="txtMesage" ng-model="chatCtrl.message" aria-label="Message Textbox" />
-            </md-input-container>
-            <md-button type="submit" ng-click="chatCtrl.sendMessage()" class="md-icon-button" aria-label="Send Message">
+        <md-toolbar layout="row" layout-align="left center" class="mini-toolbar">
+            <md-button aria-label="Text Message" class="md-icon-button" ng-click="chatCtrl.selectInput('textarea')">
+                <md-icon md-svg-icon="text"></md-icon>
+            </md-button>
+
+            <md-button aria-label="Draw Message" class="md-icon-button" ng-click="chatCtrl.selectInput('canvas')">
+                <md-icon md-svg-icon="draw"></md-icon>
+            </md-button>
+            <div flex> </div>
+            <md-button ng-click="chatCtrl.sendMessage()" class="md-icon-button" aria-label="Send Message">
                 <md-icon md-svg-icon="send"></md-icon>
             </md-button>
-        </form>
-    </div>
+        </md-toolbar>
 
+        <!-- CHAT INPUT TABS -->
+        <div flex="20" layout="column">
+            <!-- CHAT TEXTBOX -->
+            <md-input-container class="inputContainer" flex ng-show="chatCtrl.selectedInput === 'textarea'">
+                <textarea layout-fill id="txtMessage" ng-model="chatCtrl.message" max-rows="4" rows="4" aria-label="Message Textbox" md-select-on-focus
+                    md-no-resize></textarea>
+                <!--<input type="text" id="txtMesage" ng-model="chatCtrl.message" aria-label="Message Textbox" />-->
+            </md-input-container>
+
+            <!-- CHAT CANVAS -->
+            <div flex class="inputContainer" ng-show="chatCtrl.selectedInput === 'canvas'">
+                <canvas id="canvas" layout-fill ng-mousedown="chatCtrl.canvasMouseDown($event)" ng-mousemove="chatCtrl.canvasMouseMove($event)"
+                    ng-mouseup="chatCtrl.canvasMouseUp($event)" ng-mouseleave="chatCtrl.canvasMouseLeave($event)"></canvas>
+            </div>
+        </div>
+    </div>
 </div>

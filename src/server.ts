@@ -76,7 +76,7 @@ io.on("connection", function (socket) {
     });
 
     socket.on('send:message', function (message: chat.Message) {
-        console.log("sending message: " + message.message);
+        console.log("sending message");
         socket.broadcast.to(message.conversation).emit("new:message", message);
     });
 

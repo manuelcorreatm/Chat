@@ -27,7 +27,8 @@ router.post('/:conversationid/messages', function (req, res, next) {
             $push: {
                 "messages": {
                     sender: req.body.sender,
-                    message: req.body.message
+                    message: req.body.message,
+                    messageType: req.body.messageType
                 }
             }
         }, function (err, conversation) {

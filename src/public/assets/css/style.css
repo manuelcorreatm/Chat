@@ -91,7 +91,23 @@ md-sidenav md-list {
   margin-top: 10px;
 }
 
-.txtMessage {
+.inputContainer {
   background-color: white;
   margin: 0;
+  border: 5px solid lightgray;
+}
+
+.inputContainer textarea {
+  border-bottom-style: none;
+}
+
+md-input-container.inputContainer .md-errors-spacer {
+  display:none;
+}
+
+
+
+md-toolbar.mini-toolbar {
+  min-height: 36px;
+  background-color: lightgrey;
 }
