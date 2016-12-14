@@ -6,6 +6,9 @@ class ChatCtrl {
     public selectedUsers: chat.Contact[];
     public message: string;
     public selectedInput: string;
+    public contactsShown: string;
+    public conversationsShown: string;
+    public toggleContactsButtonText: string;
 
     private users: [chat.User]; //replace this with async call to search for users
     private contacts: chat.Contacts; //Object with all the user's contacts <id, contact>
@@ -21,7 +24,7 @@ class ChatCtrl {
     private offsetTop = this.canvas.getBoundingClientRect().top - window.scrollY;
     private context = this.canvas.getContext("2d");
 
-    static $inject = ["$scope", "$mdSidenav", "$location", "userService", "$http", "socketIO", "$timeout"];
+    static $inject = ["$scope", "$mdSidenav", "$location", "userService", "$http", "socketIO", "$timeout", "$mdToast", "$mdDialog"];
     constructor(
         private $scope: angular.IScope,
         private $mdSidenav: angular.material.ISidenavService,
@@ -29,22 +32,39 @@ class ChatCtrl {
         private userService: chat.UserService,
         private $http: angular.IHttpService,
         private socketIO: chat.Socket,
-        private $timeout: angular.ITimeoutService
+        private $timeout: angular.ITimeoutService,
+        private $mdToast: angular.material.IToastService,
+        private $mdDialog: angular.material.IDialogService
     ) {
         this.user = userService.getUser();
-        this.loadContacts();
-        this.loadUsers();
-        this.loadConversations();
         this.selectedUsers = [];
-
-        this.socketIO.connect();
+        this.toggleContactsButtonText = "Contact Requests";
+        this.contactsShown = "accepted";
+        this.socketIO.connect(this.user._id);
         this.socketIO.on("connect", () => {
             console.log("client connected to io");
             this.joinConversation(this.user._id);
+            this.loadContacts();
+            this.loadUsers();
+            this.loadConversations();
+
+            this.socketIO.on("disconnect:contact", (userid: string) => {
+                if (this.contacts[userid]) {
+                    this.contacts[userid].online = false;
+                }
+            });
+
             this.socketIO.on("new:message", (message: chat.Message) => {
                 this.conversations[message.conversation].messages.push(message);
                 if (this.selectedConversation && this.selectedConversation._id === message.conversation) {
                     this.updateChatWindow();
+                } else {
+                    if (message.messageType === "text") {
+                        this.$mdToast.showSimple(message.sender.name + ": " + message.message);
+                    } else {
+                        this.$mdToast.showSimple(message.sender.name + " sent a drawing");
+                    }
+                    this.conversations[message.conversation].unread++;
                 }
             });
             this.socketIO.on("add:conversation", (conversation: chat.Conversation) => {
@@ -61,11 +81,23 @@ class ChatCtrl {
                     }
                 }
                 conversation.name = names.join(", ");
+                conversation.unread = 0;
                 this.conversations[conversation._id] = conversation;
                 this.joinConversation(conversation._id);
             });
             this.socketIO.on("refresh:contacts", () => {
                 this.refreshContacts();
+            });
+            this.socketIO.on("update:contact-status", (data: any) => {
+                if (data.user === this.user._id) {
+                    this.contacts[data.contact].online = data.online;
+                } else {
+                    if (data.online && this.contacts[data.user].status === "accepted") {
+                        this.$mdToast.showSimple(this.contacts[data.user].name + " is online");
+                        this.contacts[data.user].online = data.online;
+                        this.socketIO.emit("check:online", data);
+                    }
+                }
             });
         });
 
@@ -95,10 +127,11 @@ class ChatCtrl {
             });
     }
 
-    /* TOOLBAR */
+    /*LEFT TOOLBAR */
     logout() {
         this.userService.logout()
             .then((data: any) => {
+                this.socketIO.disconnect();
                 this.$location.path("/");
             });
     }
@@ -137,11 +170,10 @@ class ChatCtrl {
                     _id: user._id,
                     name: user.name,
                     avatar: user.avatar,
-                    email: user.email
+                    email: user.email,
+                    status: "unaccepted"
                 };
                 contacts.push(contact);
-                this.user.contacts.push(contact);
-                this.contacts[contact._id] = contact;
             }
         }
         if (updateMongo) {
@@ -160,7 +192,6 @@ class ChatCtrl {
         if (this.selectedUsers.length === 1) {
             if (this.usersXconversations[this.selectedUsers[0]._id]) {
                 this.selectConversation(this.conversations[this.usersXconversations[this.selectedUsers[0]._id]]);
-                // this.selectedConversation = this.conversations[this.usersXconversations[this.selectedUsers[0]._id]];
             } else {
                 let contact = {
                     _id: this.selectedUsers[0]._id,
@@ -240,16 +271,44 @@ class ChatCtrl {
         this.contacts = {};
         for (let contact of this.user.contacts) {
             this.contacts[contact._id] = contact;
+            if (this.contacts[contact._id].status === "accepted") {
+                this.socketIO.emit("check:online", { user: this.user._id, contact: contact._id });
+            }
         }
     }
     selectContact(contact: chat.Contact) {
-        this.selectedContact = contact;
-        if (this.usersXconversations[contact._id]) {
-            this.selectConversation(this.conversations[this.usersXconversations[contact._id]]);
+        if (contact.status === "unaccepted") {
+            var confirmDialog = this.$mdDialog.confirm()
+                .title("Accept Contact Request")
+                .textContent("Do you want to accept " + contact.name + " as contact?")
+                .ariaLabel("Accept Request")
+                .ok("Accept")
+                .cancel("Cancel");
+            this.$mdDialog.show(confirmDialog)
+                .then(() => {
+                    contact.status = "accepted";
+                    //UPDATE MONGO
+                    this.$http.post("/users/" + this.user._id + "/contacts", { contacts: [contact] })
+                        .then((response: angular.IHttpPromiseCallbackArg<chat.User>) => {
+                            console.log("contact added");
+                            this.socketIO.emit("update:contacts", [contact]);
+                        });
+                    //create conversations
+                    this.selectedUsers = [contact];
+                    this.createConversation();
+                })
         } else {
-            //create it
-            this.selectedUsers = [contact];
-            this.createConversation();
+            this.selectConversation(this.conversations[this.usersXconversations[contact._id]]);
+        }
+
+    }
+    toggleContactsShown() {
+        if (this.contactsShown === "accepted") {
+            this.contactsShown = "unaccepted";
+            this.toggleContactsButtonText = "Accepted Contacts";
+        } else {
+            this.contactsShown = "accepted";
+            this.toggleContactsButtonText = "Contact Requests";
         }
     }
 
@@ -272,6 +331,7 @@ class ChatCtrl {
                         }
                     }
                     convo.name = names.join(", ");
+                    convo.unread = 0;
                     this.conversations[convo._id] = convo;
                     this.joinConversation(convo._id);
                 }
@@ -279,11 +339,13 @@ class ChatCtrl {
     }
 
     selectConversation(conversation: chat.Conversation) {
-        if (this.selectedConversation === conversation) {
+        conversation.unread = 0;
+        if (this.selectedConversation && this.selectedConversation._id === conversation._id) {
             return;
         }
         this.usersInGroup = {};
         this.selectedConversation = conversation;
+        this.updateChatWindow();
         if (conversation.type === "group") {
             for (let user of conversation.users) {
                 this.usersInGroup[user._id] = user;
@@ -291,7 +353,7 @@ class ChatCtrl {
         }
         this.selectInput("textarea");
         this.resetInputs();
-        this.updateChatWindow();
+        this.toggleSidebar();
     }
 
     /* CHAT UPPER TOOLBAR */
@@ -337,7 +399,7 @@ class ChatCtrl {
         }
     }
 
-    /* CHAT WINDOW */
+
     sendMessage() {
         var messageType: string = "text";
         if (this.selectedInput === "canvas") {
@@ -369,13 +431,6 @@ class ChatCtrl {
         this.$http.post("/conversations/" + this.selectedConversation._id + "/messages", message);
     }
 
-    private updateChatWindow() {
-        this.$timeout(() => {
-            var chatWindow = angular.element("#content");
-            chatWindow.scrollTop(chatWindow[0].scrollHeight);
-        }, 100);
-    }
-
     private resetInputs() {
         this.message = "";
         this.clickX = [];
@@ -383,6 +438,16 @@ class ChatCtrl {
         this.clickDrag = [];
         this.redraw();
     }
+
+    /* MESSAGES WINDOW */
+    private updateChatWindow() {
+        this.$timeout(() => {
+            var chatWindow = angular.element("#content");
+            chatWindow.scrollTop(chatWindow[0].scrollHeight);
+        }, 50);
+    }
+
+
 
     /* CANVAS */
     canvasMouseDown(event: JQueryEventObject) {

@@ -17,7 +17,8 @@ var UserSchema = new Schema({
             id: String,
             email: String,
             name: String,
-            avatar: String
+            avatar: String,
+            status: String
         }
     ]
 });

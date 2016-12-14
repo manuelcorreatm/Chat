@@ -52,14 +52,7 @@ md-icon {
 
 /* Sidenav area */
 
-md-list .md-button {
-  color: inherit;
-  font-weight: 500;
-  text-align: left;
-  width: 100%;
-}
-
-md-list .md-button.selected {
+md-list .selected {
   color: #03a9f4;
 }
 
@@ -74,6 +67,21 @@ md-sidenav md-list {
 .btn-requests{
   position: absolute;
   bottom: 0;
+}
+
+.notification {
+  background-color: rgb(255,64,129);
+  color: white;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+}
+
+.online {
+  background-color: greenyellow;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
 }
 
 /* Primary content area */
@@ -104,8 +112,6 @@ md-sidenav md-list {
 md-input-container.inputContainer .md-errors-spacer {
   display:none;
 }
-
-
 
 md-toolbar.mini-toolbar {
   min-height: 36px;

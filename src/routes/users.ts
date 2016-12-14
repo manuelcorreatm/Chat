@@ -6,7 +6,7 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/:userid', function (req, res) {
-    //retrieve all users from Monogo
+    //retrieve all users from Mongo except for the one passed as a parameter
     User.find({ "_id": { $ne: req.params.userid } }, { name: 1, email: 1, avatar: 1 }, function (err, users) {
         if (err) {
             return console.error(err);
@@ -19,41 +19,43 @@ router.get('/:userid', function (req, res) {
 
 router.post("/:userid/contacts", function (req, res) {
     var contacts: chat.Contact[] = req.body.contacts;
-    User.findByIdAndUpdate(req.params.userid,
-        {
-            $push: {
-                "contacts": {
-                    $each: contacts
-                }
-            }
-        },
-        { new: true },
-        function (err, user) {
-            if (err) {
-                return console.error(err);
-            } else {
-                for (let contact of contacts) {
-                    User.findByIdAndUpdate(contact._id,
-                        {
-                            $push: {
-                                "contacts": {
-                                    _id: user._id,
-                                    name: user.name,
-                                    avatar: user.avatar,
-                                    email: user.email
-                                }
+    User.findById(req.params.userid, function (err, user) {
+        if (err) {
+            return console.error(err);
+        } else {
+            for (let contact of contacts) {
+                User.findByIdAndUpdate(contact._id,
+                    {
+                        $push: {
+                            "contacts": {
+                                _id: user._id,
+                                name: user.name,
+                                avatar: user.avatar,
+                                email: user.email,
+                                status: contact.status
                             }
-                        },
-                        { new: true },
-                        function (err, user) {
-                            if (err) {
-                                return console.error(err);
+                        }
+                    },
+                    { new: true },
+                    function (err, contactUser) {
+                        if (err) {
+                            return console.error(err);
+                        } else {
+                            if (contact.status === "accepted") {
+                                User.findOneAndUpdate({ "_id": user._id, "contacts._id": contact._id },
+                                    { "contacts.$.status": "accepted" }, function (err, user) {
+                                        if (err) {
+                                            return console.log(err);
+                                        }
+                                    });
                             }
-                        });
-                }
-                res.json(user);
+                        }
+                    });
             }
-        });
+
+            res.json(user);
+        }
+    });
 });
 
 router.get("/:userid/contacts", function (req, res) {

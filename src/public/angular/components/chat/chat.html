@@ -27,26 +27,26 @@
             <md-tab label="Contacts">
                 <md-tab-content layout="column" layout-fill>
                     <md-list flex>
-                        <md-list-item ng-repeat="contact in chatCtrl.user.contacts">
-                            <md-button ng-click="chatCtrl.selectContact(contact)" ng-class="{ 'selected' : contact===chatCtrl.selectedContact }">
-                                <img ng-src="{{contact.avatar}}" class="avatar list-avatar" alt="{{contact.name}}" /> {{contact.name}}
-                            </md-button>
+                        <md-list-item ng-if="chatCtrl.contactsShown === contact.status" ng-repeat="contact in chatCtrl.contacts" ng-click="chatCtrl.selectContact(contact)"
+                            ng-class="{ 'selected' : contact===chatCtrl.selectedContact }">
+                            <img ng-src="{{contact.avatar}}" class="avatar list-avatar" alt="{{contact.name}}" />
+                            <span flex>{{contact.name}}</span>
+                            <span ng-class="{ 'online' : contact.online }"></span>
                         </md-list-item>
                     </md-list>
-                    <md-button>Contact Requests</md-button>
+                    <md-button ng-click="chatCtrl.toggleContactsShown()">{{chatCtrl.toggleContactsButtonText}}</md-button>
                 </md-tab-content>
             </md-tab>
             <!-- CONVERSATIONS -->
             <md-tab label="Conversations">
                 <md-tab-content layout="column" layout-fill>
                     <md-list flex>
-                        <md-list-item ng-repeat="conversation in chatCtrl.conversations">
-                            <md-button ng-click="chatCtrl.selectConversation(conversation)" ng-class="{ 'selected' : conversation===chatCtrl.selectedConversation }">
-                                <img ng-src="{{conversation.avatar}}" class="avatar list-avatar" alt="{{conversation.name}}" />                                {{conversation.name}}
-                            </md-button>
+                        <md-list-item ng-repeat="conversation in chatCtrl.conversations" ng-click="chatCtrl.selectConversation(conversation)" ng-class="{ 'selected' : conversation===chatCtrl.selectedConversation }">
+                            <img ng-src="{{conversation.avatar}}" class="avatar list-avatar" alt="{{conversation.name}}" />
+                            <span flex>{{conversation.name}}</span>
+                            <span layout="row" layout-align="center center" class="notification" ng-show="conversation.unread">{{conversation.unread}}</span>
                         </md-list-item>
                     </md-list>
-                    <md-button>Conversation Requests</md-button>
                 </md-tab-content>
             </md-tab>
         </md-tabs>

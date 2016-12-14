@@ -61,10 +61,24 @@ if ('development' == app.get('env')) {
 }
 
 // *** SOCKET.IO *** //
+var clients: chat.SocketClients = {};
 var server = http.createServer(app);
 var io = socketio(server);
 io.on("connection", function (socket) {
     console.log("server connected to io");
+    socket.on("disconnecting", function () {
+        var rooms = socket.rooms;
+
+        for (let room of Object.keys(rooms)) {
+            socket.broadcast.to(room).emit("disconnect:contact", clients[socket.id]);
+        }
+        clients[socket.id] = undefined;
+
+    });
+    socket.on("connect:client", function (userid: string) {
+        clients[socket.id] = userid;
+    });
+
     socket.on("join", function (room: string) {
         console.log("joining room: " + room);
         socket.join(room);
@@ -99,6 +113,16 @@ io.on("connection", function (socket) {
         for (let user of conversation.users) {
             socket.broadcast.to(user._id).emit("add:conversation", conversation);
         }
+    });
+
+    socket.on("check:online", function (data: any) {
+        if (data.online) {
+            socket.broadcast.to(data.user).emit("update:contact-status", data);
+        } else {
+            data.online = true;
+            socket.broadcast.to(data.contact).emit("update:contact-status", data);
+        }
+
     });
 });
 

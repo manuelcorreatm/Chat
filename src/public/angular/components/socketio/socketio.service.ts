@@ -6,8 +6,13 @@ class Socket implements chat.Socket {
     ) {
     }
 
-    connect() {
+    connect(userid: string) {
         this.socket = io.connect();
+        this.emit("connect:client", userid);
+    }
+
+    disconnect() {
+        this.socket.close();
     }
 
     on(eventName: string, callback: Function) {

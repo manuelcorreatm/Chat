@@ -7,7 +7,9 @@ declare namespace chat {
         _id: string,
         email: string,
         name: string,
-        avatar: string
+        avatar: string,
+        online?: boolean,
+        status?: string
     }
 
     export interface Contacts {
@@ -43,7 +45,8 @@ declare namespace chat {
         avatar?: string,
         users: Contact[],
         messages: Message[],
-        type: string
+        type: string,
+        unread?: number
     }
 
     export interface Conversations {
@@ -75,8 +78,13 @@ declare namespace chat {
     }
 
     export interface Socket {
-        connect(): void;
+        connect(userid: string): void;
+        disconnect(): void;
         on(eventName: string, callback: Function): void;
         emit(eventName: string, data: any, callback?: Function): void;
+    }
+
+    export interface SocketClients {
+        [index: string]: string;
     }
 }
