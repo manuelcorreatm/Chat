@@ -5,15 +5,19 @@ class LoginCtrl {
     public rightButton: string;
     public isRegistering: boolean;
 
-    static $injector = ["$scope", "$location", "$http", "userService"];
+    static $injector = ["$scope", "$location", "$http", "userService", "$translate"];
     constructor(
         private $scope: angular.IScope,
         private $location: angular.ILocationService,
         private $http: angular.IHttpService,
-        private userService: chat.UserService
+        private userService: chat.UserService,
+        private $translate: angular.translate.ITranslateService
     ) {
-        this.rightButton = "Register";
-        this.isRegistering = false;
+        this.$translate("REGISTER")
+            .then((register) => {
+                this.rightButton = register;
+                this.isRegistering = false;
+            });
     }
 
     loginFacebook() {
@@ -36,11 +40,17 @@ class LoginCtrl {
 
     toggleRegister() {
         if (this.isRegistering) {
-            this.rightButton = "Register";
-            this.isRegistering = false;
+            this.$translate("REGISTER")
+                .then((register) => {
+                    this.rightButton = register;
+                    this.isRegistering = false;
+                });
         } else {
-            this.rightButton = "Cancel";
-            this.isRegistering = true;
+            this.$translate("CANCEL")
+                .then((cancel) => {
+                    this.rightButton = cancel;
+                    this.isRegistering = true;
+                });
         }
     }
 

@@ -65,10 +65,10 @@ var clients: chat.SocketClients = {};
 var server = http.createServer(app);
 var io = socketio(server);
 io.on("connection", function (socket) {
-    console.log("server connected to io");
+    console.log("client connected to server");
     socket.on("disconnecting", function () {
         var rooms = socket.rooms;
-
+        console.log("client disconnecting from server");
         for (let room of Object.keys(rooms)) {
             socket.broadcast.to(room).emit("disconnect:contact", clients[socket.id]);
         }

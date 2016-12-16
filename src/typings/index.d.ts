@@ -24,3 +24,4 @@
 /// <reference path="globals/serve-static/index.d.ts" />
 /// <reference path="globals/socket.io-client/index.d.ts" />
 /// <reference path="globals/socket.io/index.d.ts" />
+/// <reference path="modules/angular-translate/index.d.ts" />

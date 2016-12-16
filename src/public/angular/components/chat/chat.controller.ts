@@ -24,7 +24,7 @@ class ChatCtrl {
     private offsetTop = this.canvas.getBoundingClientRect().top - window.scrollY;
     private context = this.canvas.getContext("2d");
 
-    static $inject = ["$scope", "$mdSidenav", "$location", "userService", "$http", "socketIO", "$timeout", "$mdToast", "$mdDialog"];
+    static $inject = ["$scope", "$mdSidenav", "$location", "userService", "$http", "socketIO", "$timeout", "$mdToast", "$mdDialog", "$translate"];
     constructor(
         private $scope: angular.IScope,
         private $mdSidenav: angular.material.ISidenavService,
@@ -34,11 +34,17 @@ class ChatCtrl {
         private socketIO: chat.Socket,
         private $timeout: angular.ITimeoutService,
         private $mdToast: angular.material.IToastService,
-        private $mdDialog: angular.material.IDialogService
+        private $mdDialog: angular.material.IDialogService,
+        private $translate: angular.translate.ITranslateService
     ) {
         this.user = userService.getUser();
         this.selectedUsers = [];
-        this.toggleContactsButtonText = "Contact Requests";
+
+        $translate("CONTACT REQUESTS")
+            .then((ContactRequests) => {
+                this.toggleContactsButtonText = ContactRequests;
+            });
+
         this.contactsShown = "accepted";
         this.socketIO.connect(this.user._id);
         this.socketIO.on("connect", () => {
@@ -62,7 +68,10 @@ class ChatCtrl {
                     if (message.messageType === "text") {
                         this.$mdToast.showSimple(message.sender.name + ": " + message.message);
                     } else {
-                        this.$mdToast.showSimple(message.sender.name + " sent a drawing");
+                        $translate("SENT A DRAWING")
+                            .then((sentADrawing) => {
+                                this.$mdToast.showSimple(message.sender.name + " " + sentADrawing);
+                            });
                     }
                     this.conversations[message.conversation].unread++;
                 }
@@ -93,7 +102,10 @@ class ChatCtrl {
                     this.contacts[data.contact].online = data.online;
                 } else {
                     if (data.online && this.contacts[data.user].status === "accepted") {
-                        this.$mdToast.showSimple(this.contacts[data.user].name + " is online");
+                        $translate("IS ONLINE")
+                            .then((isOnline) => {
+                                this.$mdToast.showSimple(this.contacts[data.user].name + " " + isOnline);
+                            });
                         this.contacts[data.user].online = data.online;
                         this.socketIO.emit("check:online", data);
                     }
@@ -278,25 +290,29 @@ class ChatCtrl {
     }
     selectContact(contact: chat.Contact) {
         if (contact.status === "unaccepted") {
-            var confirmDialog = this.$mdDialog.confirm()
-                .title("Accept Contact Request")
-                .textContent("Do you want to accept " + contact.name + " as contact?")
-                .ariaLabel("Accept Request")
-                .ok("Accept")
-                .cancel("Cancel");
-            this.$mdDialog.show(confirmDialog)
-                .then(() => {
-                    contact.status = "accepted";
-                    //UPDATE MONGO
-                    this.$http.post("/users/" + this.user._id + "/contacts", { contacts: [contact] })
-                        .then((response: angular.IHttpPromiseCallbackArg<chat.User>) => {
-                            console.log("contact added");
-                            this.socketIO.emit("update:contacts", [contact]);
+            this.$translate(["ACCEPT", "CANCEL", "ACCEPT REQUEST", "DO YOU WANT TO ACCEPT", "AS CONTACT", "ACCEPT CONTACT REQUEST"])
+                .then((translations) => {
+                    var confirmDialog = this.$mdDialog.confirm()
+                        .title(translations["ACCEPT CONTACT REQUEST"])
+                        .textContent(translations["DO YOU WANT TO ACCEPT"] + " " + contact.name + " " + translations["AS CONTACT"])
+                        .ariaLabel(translations["ACCEPT REQUEST"])
+                        .ok(translations["ACCEPT"])
+                        .cancel(translations["CANCEL"]);
+                    this.$mdDialog.show(confirmDialog)
+                        .then(() => {
+                            contact.status = "accepted";
+                            //UPDATE MONGO
+                            this.$http.post("/users/" + this.user._id + "/contacts", { contacts: [contact] })
+                                .then((response: angular.IHttpPromiseCallbackArg<chat.User>) => {
+                                    console.log("contact added");
+                                    this.socketIO.emit("update:contacts", [contact]);
+                                });
+                            //create conversations
+                            this.selectedUsers = [contact];
+                            this.createConversation();
                         });
-                    //create conversations
-                    this.selectedUsers = [contact];
-                    this.createConversation();
-                })
+                });
+
         } else {
             this.selectConversation(this.conversations[this.usersXconversations[contact._id]]);
         }
@@ -304,11 +320,17 @@ class ChatCtrl {
     }
     toggleContactsShown() {
         if (this.contactsShown === "accepted") {
-            this.contactsShown = "unaccepted";
-            this.toggleContactsButtonText = "Accepted Contacts";
+            this.$translate("ACCEPTED CONTACTS")
+                .then((acceptedContacts) => {
+                    this.toggleContactsButtonText = acceptedContacts;
+                    this.contactsShown = "unaccepted";
+                });
         } else {
-            this.contactsShown = "accepted";
-            this.toggleContactsButtonText = "Contact Requests";
+            this.$translate("CONTACT REQUESTS")
+                .then((contactRequests) => {
+                    this.toggleContactsButtonText = contactRequests;
+                    this.contactsShown = "accepted";
+                });
         }
     }
 
@@ -499,9 +521,6 @@ class ChatCtrl {
             this.context.stroke();
         }
     }
-
-
-
 
 }
 

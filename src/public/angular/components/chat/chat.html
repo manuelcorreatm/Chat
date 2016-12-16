@@ -11,7 +11,7 @@
         <!-- AUTOCOMPLETE CHIPS USER SEARCH -->
         <div layout="row">
             <md-contact-chips flex ng-model="chatCtrl.selectedUsers" md-contacts="chatCtrl.getMatches($query)" md-contact-name="name"
-                md-contact-image="avatar" md-contact-email="email" md-require-match="true" placeholder="Search User">
+                md-contact-image="avatar" md-contact-email="email" md-require-match="true" placeholder="{{'SEARCH USER' | translate}}">
             </md-contact-chips>
             <md-button ng-click="chatCtrl.addContact()" class="md-icon-button" aria-label="Add Contact">
                 <md-icon md-svg-icon="addcontact"></md-icon>
@@ -24,7 +24,7 @@
         <!-- SIDEBAR TABS -->
         <md-tabs md-stretch-tabs="always" flex>
             <!-- CONTACTS -->
-            <md-tab label="Contacts">
+            <md-tab label="{{'CONTACTS'| translate}}">
                 <md-tab-content layout="column" layout-fill>
                     <md-list flex>
                         <md-list-item ng-if="chatCtrl.contactsShown === contact.status" ng-repeat="contact in chatCtrl.contacts" ng-click="chatCtrl.selectContact(contact)"
@@ -38,7 +38,7 @@
                 </md-tab-content>
             </md-tab>
             <!-- CONVERSATIONS -->
-            <md-tab label="Conversations">
+            <md-tab label="{{'CONVERSATIONS' | translate}}">
                 <md-tab-content layout="column" layout-fill>
                     <md-list flex>
                         <md-list-item ng-repeat="conversation in chatCtrl.conversations" ng-click="chatCtrl.selectConversation(conversation)" ng-class="{ 'selected' : conversation===chatCtrl.selectedConversation }">
@@ -100,7 +100,6 @@
             <md-input-container class="inputContainer" flex ng-show="chatCtrl.selectedInput === 'textarea'">
                 <textarea layout-fill id="txtMessage" ng-model="chatCtrl.message" max-rows="4" rows="4" aria-label="Message Textbox" md-select-on-focus
                     md-no-resize></textarea>
-                <!--<input type="text" id="txtMesage" ng-model="chatCtrl.message" aria-label="Message Textbox" />-->
             </md-input-container>
 
             <!-- CHAT CANVAS -->
