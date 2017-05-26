@@ -1,0 +1,19 @@
+<form layout="column" layout-align="center center" novalidate>
+    <md-input-container class="loginInput" ng-show="$ctrl.isRegistering">
+        <label for="name">{{'NAME' | translate}}</label>
+        <input type="text" id="name" ng-model="$ctrl.name" />
+    </md-input-container>
+    <md-input-container class="loginInput">
+        <label for="email">{{'EMAIL' | translate}}</label>
+        <input type="email" id="email" ng-model="$ctrl.loginData.email" required/>
+    </md-input-container>
+    <md-input-container class="loginInput">
+        <label for="pass">{{'PASSWORD' | translate}}</label>
+        <input type="password" id="pass" ng-model="$ctrl.loginData.password" required/>
+    </md-input-container>
+    <div layout="row">
+        <md-button class="md-raised md-primary" ng-click="$ctrl.submitForm()" ng-hide="$ctrl.isRegistering">{{'LOGIN' | translate}}</md-button>
+        <!--<md-button class="md-raised md-primary" ng-click="$ctrl.signUp()" ng-show="$ctrl.isRegistering">{{'SIGNUP' | translate}}</md-button>-->
+        <!--<md-button class="md-raised" ng-click="$ctrl.toggleRegister()">{{loginCtrl.rightButton}}</md-button>-->
+    </div>
+</form>

@@ -30,6 +30,8 @@
         "socket.io-client": "registry:dt/socket.io-client#1.4.4+20160317120654"
     },
     "dependencies": {
-        "angular-translate": "registry:dt/angular-translate#2.4.0+20161206185711"
+        "angular": "registry:dt/angular#1.5.0+20161212190028",
+        "angular-translate": "registry:dt/angular-translate#2.4.0+20161206185711",
+        "angular-ui-router": "registry:dt/angular-ui-router#1.1.5+20161122230850"
     }
 }

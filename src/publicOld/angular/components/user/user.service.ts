@@ -5,7 +5,9 @@ class UserService implements chat.UserService {
     }
 
     getUser(): chat.User {
-        return this.user;
+        if (this.user) {
+            return this.user;
+        }
     }
 
     loginFb(): angular.IPromise<chat.User> {
